@@ -1,0 +1,26 @@
+在Windows下写了一个shell脚本，上传到Linux下执行时报错：
+
+复制代码 代码如下:
+[root@localhost test]# ./test.sh   
+-bash: ./test.sh: /bin/sh^M: bad interpreter: No such file or directory
+
+test.sh源码:  
+复制代码 代码如下:
+#!/bin/sh  
+
+echo "test shell "
+由于自己对shell不太熟悉，找同事沟通了后了解了原委，主要原因是test.sh是我在windows下编辑然后上传到linux系统里执行的。.sh文件的格式为dos格式。而linux只能执行格式为unix格式的脚本。因为在dos/window下按一次回车键实际上输入的是“回车（CR)”和“换行（LF）”，而Linux/unix下按一次回车键只输入“换行（LF）”，所以修改的sh文件在每行都会多了一个CR，所以Linux下运行时就会报错找不到命令。
+我们可以通过vi编辑器来查看文件的format格式。步骤如下：
+1.首先用vi命令打开文件
+[root@localhost test]# vi test.sh   
+2.在vi命令模式中使用 :set ff 命令
+可以看到改文件的格式为
+
+复制代码 代码如下:
+fileformat=dos
+
+3.修改文件format为unix
+使用vi/vim修改文件format
+命令：:set ff=unix
+或者：:set fileformat=unix
+然后:wq保存退出就可以了

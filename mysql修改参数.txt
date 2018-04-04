@@ -1,0 +1,16 @@
+binlog_row_image = minimal			#默认full ,mimimal 可以减小二进制日志时间
+
+binlog_cache_size = 256KB           #128KB 不够大再加大
+eq_range_index_dive_limit=200       #10  200推荐值 in()操作时候多数情况下是超过10个数据的
+
+ft_min_word_len =1 					#中文索引推荐1
+
+innodb_autoinc_lock_mode = 2    # 原本1，2性能上会高很多，缺点：id值不是连续的	
+
+innodb_ft_min_token_size = 1    # 全文索引单词最小长度，推荐1，默认3
+
+
+#如CPU是2颗8核的，那么可以设置：
+# innodb_read_io_threads = 8
+# innodb_write_io_threads = 8
+

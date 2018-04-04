@@ -1,0 +1,31 @@
+mysql innodb分析
+
+tmp_table_size 它规定了内部内存临时表的最大值，每个线程都要分配
+（实际起限制作用的是tmp_table_size和max_heap_table_size的最小值。）如果内存临时表超出了限制，MySQL就会自动地把它转化为基于磁盘的MyISAM表，存储在指定的tmpdir目录下，默认:
+mysql> show variables like "tmpdir";
+| Variable_name | Value |
++---------------+-------+
+| tmpdir        | /tmp  |
+
+优化查询语句的时候，要避免使用临时表，如果实在避免不了的话，要保证这些临时表是存在内存中的。如果需要的话并且你有很多group by语句，并且你有很多内存，增大tmp_table_size(和max_heap_table_size)的值。
+这个变量不适用与用户创建的内存表(memory table).
+你可以比较内部基于磁盘的临时表的总数和创建在内存中的临时表的总数（Created_tmp_disk_tables和Created_tmp_tables），一般的比例关系是:
+Created_tmp_disk_tables/Created_tmp_tables<5%
+max_heap_table_size
+这个变量定义了用户可以创建的内存表(memory table)的大小.这个值用来计算内存表的最大行数值。这个变量支持动态改变，即set @max_heap_table_size=#
+,但是对于已经存在的内存表就没有什么用了，除非这个表被重新创建(create table)或者修改(alter table)或者truncate table。服务重启也会设置已经存在的内存表为全局max_heap_table_size的值。
+这个变量和tmp_table_size一起限制了内部内存表的大小。
+
+
+mysql根据配置文件会限制server接受的数据包大小。
+
+有时候大的插入和更新会受max_allowed_packet 参数限制，导致写入或者更新失败。
+查看目前配置
+show VARIABLES like '%max_allowed_packet%';
+显示的结果为：
++--------------------+---------+
+| Variable_name      | Value   |
++--------------------+---------+
+| max_allowed_packet | 1048576 |
++--------------------+---------+ 
+以上说明目前的配置是：1M

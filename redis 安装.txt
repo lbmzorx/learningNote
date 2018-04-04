@@ -1,0 +1,242 @@
+下载
+https://github.com/MicrosoftArchive/redis
+
+点击 release 
+下载所需要的版本
+https://github.com/MicrosoftArchive/redis/releases/download/win-3.2.100/Redis-x64-3.2.100.msi
+
+安装
+msi
+选择安装路径 
+D:/program file/reids
+
+端口
+33
+
+以管理员身份进入目录
+安装系统服务，一般自动安装好的
+redis-server.exe --service-install redis.windows.conf --loglevel verbose 
+
+启动服务
+redis-server.exe redis.windows.conf
+
+
+改密码
+#requirepass foobared  去掉注释
+
+在php拓展官网找到redis php拓展
+http://pecl.php.net/package/redis
+下载适合的版本
+
+解压，将
+php_redis.dll放到php安装目录ext目录下
+php.ini中添加
+	extension=php_redis.dll
+
+1 改配置文件
+	session.save_handler = redis
+
+ 	session.save_path = "tcp://127.0.0.1:6379"
+
+ 	如果有密码 
+ 	session.save_path = "tcp://127.0.0.1:6379?auth=Password"
+即可
+
+或者 在代码中
+   		ini_set(“session.save_handler”,”redis”);
+      	ini_set(“session.save_path”,”tcp://127.0.0.1:6379″);
+
+有一点不能更改数据库
+
+
+
+2 yii拓展
+	安装拓展 https://github.com/yiisoft/yii2-redis
+
+	查看配置
+	https://github.com/yiisoft/yii2-redis/blob/master/docs/guide/README.md
+
+	composer
+	php composer.phar require --prefer-dist yiisoft/yii2-redis
+
+
+	安装完毕
+	该配置
+	//缓存
+  	'cache' => [
+//            'class' => 'yii\caching\FileCache',
+            'class' => 'yii\redis\Cache',       //使用redis作为缓存
+            'redis' => [
+                'hostname' => '127.0.0.1',
+                'port' => 6379,
+                'password'=>'foo123',
+                'database' => 1,        //指定数据库
+            ],
+        ],
+
+      //session
+	 'session' => [
+            // this is the name of the session cookie used for login on the open
+            'class' => 'yii\redis\Session',
+            'redis' => [
+                'hostname' => '127.0.0.1',
+                'port' => 6379,
+                'password'=>'foo123',
+                'database' => 2,        //指定数据库
+            ],
+            'name' => 'foxdou',
+            'timeout' => 3600,
+            'cookieParams' => [
+              //  'domain' => '.'.DOMAIN,
+                'lifetime' => 0,
+                'httpOnly' => true,
+                'path' => '/',
+            ],
+        ],
+
+linux 
+
+linux wget hhttp://pecl.php.net/get/redis-3.1.6.tgz
+下载安装包，不必最新
+wget http://windows.php.net/downloads/pecl/releases/redis/3.1.6/php_redis-3.1.6-7.0-nts-vc14-x64.zip
+wget http://download.redis.io/releases/redis-3.2.11.tar.gz
+
+解压 
+tar -zxvf redis-3.2.11.tar.gz
+
+进入目录
+cd redis-3.2.11
+
+
+1指定目录
+ make PREFIX=/usr/local/redis install
+
+[root@testhost etc]# ls -l /usr/local/redis/bin/
+total 26356
+-rwxr-xr-x 1 root root 5580551 Jan 19 16:29 redis-benchmark
+-rwxr-xr-x 1 root root   22177 Jan 19 16:29 redis-check-aof
+-rwxr-xr-x 1 root root 7833313 Jan 19 16:29 redis-check-rdb
+-rwxr-xr-x 1 root root 5709315 Jan 19 16:29 redis-cli
+lrwxrwxrwx 1 root root      12 Jan 19 16:29 redis-sentinel -> redis-server
+-rwxr-xr-x 1 root root 7833313 Jan 19 16:29 redis-server
+
+
+2 不指定目录编译
+make
+
+编译完成提示 make test 测试
+
+[root@testhost redis-3.2.11]# make test
+cd src && make test
+make[1]: Entering directory `/root/redis-3.2.11/src'
+You need tcl 8.5 or newer in order to run the Redis test
+make[1]: *** [test] Error 1
+make[1]: Leaving directory `/root/redis-3.2.11/src'
+make: *** [test] Error 2
+
+没有工具
+make的时候可能有警告，不影响安装
+
+wget http://downloads.sourceforge.net/tcl/tcl8.6.1-src.tar.gz
+sudo tar xzvf tcl8.6.1-src.tar.gz  -C /usr/local/
+cd  /usr/local/tcl8.6.1/unix/
+sudo ./configure
+sudo make
+sudo make install
+ 
+ 
+
+ 不安装也不影响
+
+ 继续redis 
+ make install
+
+ cd src/
+ make install
+
+ ll
+
+ 三、Redis的部署
+
+安装成功后，下面对Redis 进行部署
+
+1、首先为了方便管理，将Redis文件中的conf配置文件和常用命令移动到统一文件中
+
+a)创建bin和redis.conf文件
+
+复制代码代码如下:
+mkdir -p/usr/local/redis/bin
+mkdir -p/usr/local/redis/etc
+
+	
+
+安装完成
+系统自动启动
+
+安装包下utils目录中，服务名称为redisd
+[root@testhost utils]# cp redis_init_script /etc/init.d/redisd
+
+修改启动目录
+[root@testhost utils]# vi /etc/init.d/redisd  
+#!/bin/sh
+#
+# chkconfig:2345 80 90  		//重要
+REDISPORT=6379
+EXEC=/usr/local/redis/bin/redis-server
+CLIEXEC=/usr/local/redis/bin/redis-cli
+
+PIDFILE=/var/run/redis_${REDISPORT}.pid
+CONF="/etc/redis/redis.${REDISPORT}.conf"
+
+
+[root@testhost utils]# mkdir -p /etc/redis/
+[root@testhost utils]# cp /usr/local/redis/etc/redis.conf /etc/redis/redis.6379.conf
+
+
+[root@testhost bin]# chkconfig --add redisd
+[root@testhost bin]# chkconfig --list
+redisd          0:off   1:off   2:on    3:on    4:on    5:on    6:off	
+添加成功
+
+开放端口
+直接编辑/etc/sysconfig/iptables文件
+	1.编辑/etc/sysconfig/iptables文件：vi /etc/sysconfig/iptables
+	2.重启服务：/etc/init.d/iptables restart
+	3.查看端口是否开放：/sbin/iptables -L -n
+
+1首先编辑conf文件，将daemonize属性改为yes（表明需要在后台运行）
+
+
+启动服务
+service redisd start
+netstat -tunpl | grep "6379"
+tcp        0      0 127.0.0.1:6379              0.0.0.0:*                   LISTEN      10839/redis-server
+
+
+
+二 、
+php redis拓展http://pecl.php.net/get/redis-3.1.6.tgz
+解压
+#tar -zxf redis-3.1.6.tgz
+#cd redis-3.1.6
+# /usr/local/php/bin/phpize
+Configuring for:
+PHP Api Version:         20151012
+Zend Module Api No:      20151012
+Zend Extension Api No:   320151012
+# ./configure --with-php-config=/usr/local/php/bin/php-config 
+
+
+#vi /usr/local/php/etc/php.ini
+
+[redis]
+extension=redis.so
+
+
+
+
+连接
+
+外网连接 需要去掉绑定ip
+
+

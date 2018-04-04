@@ -1,0 +1,51 @@
+BEGIN
+ 
+DECLARE done INT DEFAULT 0; 
+DECLARE i	INT DEFAULT 0;
+DECLARE PARTITION_NAME_LOOP VARCHAR(30);
+DECLARE PARTITION_VALUE_LOOP INT;
+DECLARE partition_alter LONGTEXT;
+
+DECLARE count_partition INT;
+
+DECLARE ALL_PARTITION CURSOR for 
+		SELECT PARTITION_NAME,PARTITION_DESCRIPTION 
+		FROM information_schema.PARTITIONS  
+		WHERE TABLE_SCHEMA = 'test' AND TABLE_NAME = 'test_ee' 
+		ORDER BY PARTITION_ORDINAL_POSITION ASC ;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;  
+
+SELECT PARTITION_NAME INTO @LAST_MAXVALUE FROM information_schema.PARTITIONS  
+		WHERE TABLE_SCHEMA = 'test' AND TABLE_NAME = 'test_ee'
+		ORDER BY PARTITION_ORDINAL_POSITION DESC LIMIT 1;    
+
+SET @LAST_MAXVALUE_DATE=REPLACE(@LAST_MAXVALUE,'p','');
+
+SET partition_alter='alter table `aa` partition by range(`add_time`)(';
+
+OPEN ALL_PARTITION;
+
+emp_loop: LOOP  
+        FETCH ALL_PARTITION INTO PARTITION_NAME_LOOP,PARTITION_VALUE_LOOP;
+
+				IF @LAST_MAXVALUE=PARTITION_NAME_LOOP THEN
+					SET partition_alter=CONCAT(partition_alter,'partition  `',PARTITION_NAME_LOOP,'` values less than(',PARTITION_VALUE_LOOP,'),');
+					SET @LAST_PARTITION_NAME=UNIX_TIMESTAMP();
+					SET @LAST_PARTITION_STAMP=DATE_FORMAT(DATE_ADD(@LAST_MAXVALUE_DATE,INTERVAL 7 DAY),"%Y_%m_%d");
+					SET partition_alter=CONCAT(partition_alter,'partition  `',PARTITION_NAME_LOOP,'` values less than(',PARTITION_VALUE_LOOP,'))');
+					SET done=1;
+				ELSE
+					SET partition_alter=CONCAT(partition_alter,'partition  `',PARTITION_NAME_LOOP,'` values less than(',PARTITION_VALUE_LOOP,'),
+');
+				END IF;
+
+			  IF done=1 THEN  
+             LEAVE emp_loop;  
+        END IF;  
+     END LOOP emp_loop;
+CLOSE ALL_PARTITION;
+
+
+SELECT partition_alter;
+ 
+END

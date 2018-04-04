@@ -1,0 +1,582 @@
+mysql分区技术
+
+表的总记录数超过1000万，会出现性能的大幅度下架，下降比率，由系统的架构、应用程序、数据索引、服务器硬件等多种因素决定。数据库多达上亿条，任何一条记录的操作都会有交
+
+海量数据的优化主要有2种：大表拆分小表，SQL语句的优化
+逻辑层面: sql语句的优化，可以通过增加索引等来调整，但是数据量的增大将会导致索引的维护代价增大
+物理方法: 大表拆分小表，竖直切分，水平切分
+
+
+mysql 分区介绍
+物理上 切分成小表，但是逻辑上还是一个表
+
+RANGE分区:基于一个给定连续区间的列值，就是一个字段，把多行分配给分区，
+LIST分区 :类似于按RANGE分区，区别在于LIST分区是基于列值匹配一个离散值集合中的某个值来进行选择，range分区的特例，列的值是固定的，比如 性别只有男和女，
+HASH: 基于用户定义的表达式的返回值来进行选择的分区，该表达式使用将要插入到表中的这些行的列值进行计算，这个函数可以包含mysql中有效的、产生非负整数的任何表达式，一般可用来分区测试，需要看环境
+key 分区: 类似于按hash分区，区别在于key分区只支持计算一列或多列，且mysql服务器提供其自身的哈希函数，
+
+需求：表有20家店职员记录，20家店从1到20，像分成4个小分区
+
+RANGE分区例子，根据店号
+mysql> create table employees()
+-> id INT NOT NULL,
+-> fname VARCHAR(30),
+-> lname VARCHAR(30),
+-> hired DATE NOT NULL DEFAULT'1970-01-01',
+-> separated DATE NOTE NULL DEFAULT'9999-12-31',
+-> job_code INT NOT NULL,
+-> store_id INT NOT NULL
+->)
+-> PARTITION BY RANGE(store_id)(
+-> PARTITION p0 VALUES LESS THAN(6),	# 店号是在6以内是在p0分区
+-> PARTITION p1 VALUES LESS THAN(11),	# 店号是在6到11是在p1分区
+-> PARTITION p2 VALUES LESS THAN(16),	# 店号是在11到16以内是在p2分区
+-> PARTITION p4 VALUES LESS THAN(21),	# 店号是在16到21以内是在p3分区
+->);
+
+
+RANGE分区例子，根据日期
+mysql> create table employees()
+-> id INT NOT NULL,
+-> fname VARCHAR(30),
+-> lname VARCHAR(30),
+-> hired DATE NOT NULL DEFAULT'1970-01-01',
+-> separated DATE NOTE NULL DEFAULT'9999-12-31',
+-> job_code INT NOT NULL,
+-> store_id INT NOT NULL
+->)
+-> PARTITION BY RANGE(YEAR(separated))(
+-> PARTITION p0 VALUES LESS THAN(1991),	# 店号是在1991年以前p0分区
+-> PARTITION p1 VALUES LESS THAN(1996),	# 店号是在1991年到1996年在p1分区
+-> PARTITION p2 VALUES LESS THAN(2001),	# 店号是在1996到2001年是在p2分区
+-> PARTITION p4 VALUES LESS THAN MAXLALUE,	# 店号是在2000年以后是在p3分区
+->);
+
+
+LIST分区
+地区 店号 根据店号来分区
+mysql> create table employees()
+-> id INT NOT NULL,
+-> fname VARCHAR(30),
+-> lname VARCHAR(30),
+-> hired DATE NOT NULL DEFAULT'1970-01-01',
+-> separated DATE NOTE NULL DEFAULT'9999-12-31',
+-> job_code INT NOT NULL,
+-> store_id INT NOT NULL
+->)
+-> PARTITION BY LIST(store_id)(
+-> PARTITION p0 VALUES IN(3,5,6,7),	# 店号是3,5,6,7是在p0分区
+-> PARTITION p1 VALUES IN(8,9,10),	# 店号是在8,9,10是在p1分区
+-> PARTITION p2 VALUES IN(11,12,13,14,15),	# 店号是11,12,13,14,15是在p2分区
+-> PARTITION p4 VALUES IN(16,17,18,19,20),	# 店号14,15,16,17,18,19,20是在分区
+->);
+
+
+HASH分区
+根据入职年份
+mysql> create table employees()
+-> id INT NOT NULL,
+-> fname VARCHAR(30),
+-> lname VARCHAR(30),
+-> hired DATE NOT NULL DEFAULT'1970-01-01',
+-> separated DATE NOTE NULL DEFAULT'9999-12-31',
+-> job_code INT NOT NULL,
+-> store_id INT NOT NULL
+->)
+-> PARTITION BY HASH(YEAR(hired))
+-> PARTITIONS 4
+
+
+查看mysql 是否支持分区
+默认表引擎
+>show engiens;
+查看插件
+>show plugins;
+这里有partition，说明才能分区
+
+1 表复制+复制表数据
+>create table t3 like t1;
+> insert into t3 select * from t1;
+
+复制表结构
+ create table t2 like t1;
+
+
+mysql> show tables;
++----------------+
+| Tables_in_test |
++----------------+
+| t1             |
++----------------+
+1 row in set (0.00 sec)
+mysql> insert into t2 select * from t1;
+ERROR 1146 (42S02): Table 'test.t2' doesn't exist
+mysql> drop table t1;
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> show tables;
+Empty set (0.00 sec)
+
+mysql> create table t1(
+    -> id int unsigned not null auto_increment primary key,
+    -> name varchar(30)
+    -> );
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> show tables;
++----------------+
+| Tables_in_test |
++----------------+
+| t1             |
++----------------+
+1 row in set (0.00 sec)
+
+mysql> desc t1;
++-------+------------------+------+-----+---------+----------------+
+| Field | Type             | Null | Key | Default | Extra          |
++-------+------------------+------+-----+---------+----------------+
+| id    | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+| name  | varchar(30)      | YES  |     | NULL    |                |
++-------+------------------+------+-----+---------+----------------+
+2 rows in set (0.00 sec)
+
+mysql> insert into t1(name) values("user1");
+Query OK, 1 row affected (0.03 sec)
+
+mysql> insert into t1(name) values("user2");
+Query OK, 1 row affected (0.00 sec)
+
+mysql> create table t2 like t1;
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> desc t2;
++-------+------------------+------+-----+---------+----------------+
+| Field | Type             | Null | Key | Default | Extra          |
++-------+------------------+------+-----+---------+----------------+
+| id    | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+| name  | varchar(30)      | YES  |     | NULL    |                |
++-------+------------------+------+-----+---------+----------------+
+2 rows in set (0.00 sec)
+
+
+
+1.2 mysql 索引
+ALTER TABLE 用来创建普通索引(推荐)，可以对主键索引操作
+
+
+1.2.1 create index 
+mysql> create index in_name on t1(name);
+mysql> show index from t1\G;
+*************************** 1. row ***************************
+        Table: t1
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: id
+    Collation: A
+  Cardinality: 2
+     Sub_part: NULL
+       Packed: NULL
+         Null: 
+   Index_type: BTREE
+      Comment: 
+Index_comment: 
+*************************** 2. row ***************************
+        Table: t1
+   Non_unique: 1
+     Key_name: in_name
+ Seq_in_index: 1
+  Column_name: name
+    Collation: A
+  Cardinality: 2
+     Sub_part: NULL
+       Packed: NULL
+         Null: YES
+   Index_type: BTREE
+      Comment: 
+Index_comment: 
+2 rows in set (0.00 sec)
+
+drop index in_name on t1;
+show index from t1\G;
+
+创建唯一索引
+mysql> create unique index un_name on t1(name);
+mysql> drop index un_name on t1;
+
+
+通过 alter语句
+
+mysql> alter table t1 add index in_name (name);			//添加普通索引
+mysql> alter table t1 add index unique(column_list); //添加唯一索引
+mysql> show index from t1\G;
+mysql> alter table t1 drop index in_name;				//普通索引
+mysql> show index from t1\G
+mysql> alter table t1 drop index name;
+mysql> alter table t1 add primary key(column_list);		//添加主键索引
+
+自增列必须是主键，
+
+添加主键
+ALTER TABLE `test_request_api_log_open`
+MODIFY COLUMN `add_time`  int(11) NOT NULL AFTER `code`,
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`id`, `add_time`);
+
+
+去除自增
+mysql> alter table t1 modify id int unsigned not null;
+Query OK, 2 rows affected (0.22 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> desc t1;
++-------+------------------+------+-----+---------+-------+
+| Field | Type             | Null | Key | Default | Extra |
++-------+------------------+------+-----+---------+-------+
+| id    | int(10) unsigned | NO   | PRI | NULL    |       |
+| name  | varchar(30)      | YES  |     | NULL    |       |
++-------+------------------+------+-----+---------+-------+
+删除主键
+mysql> alter table t1 drop index index_name;		//不是主键
+mysql> alter table t1 drop primary key;				//是主键
+
+
+
+1.3 mysql 视图
+通过一个条件，从一个表中拿出一部分符合这个条件的数据，构成的一个表，是一个中间表，就是视图
+中间表
+
+帮助 
+？ create view
+创建视图
+mysql> create view v_t1 as select * from t1 where id>4 and id<8;
+
+mysql> show tables;
++----------------+
+| Tables_in_test |
++----------------+
+| t1             |
+| t2             |
+| v_t1           |
++----------------+
+删除
+mysql> drop view v_t1;
+mysql> show tables;
++----------------+
+| Tables_in_test |
++----------------+
+| t1             |
+| t2             |
++----------------+
+
+
+1.4 内置函数
+
+字符串
+concat()		连接字符串
+mysql> select concat("hello","world") as myname;
++------------+
+| myname     |
++------------+
+| helloworld |
+小写转大写
+mysql> select lcase("mysql");
++----------------+
+| lcase("mysql") |
++----------------+
+| mysql          |
++----------------+
+1 row in set (0.03 sec)
+
+mysql> select lcase("MYSQL");
++----------------+
+| lcase("MYSQL") |
++----------------+
+| mysql          |
++----------------+
+1 row in set (0.00 sec)
+大写转小写
+mysql> select Ucase("mysql");
++----------------+
+| Ucase("mysql") |
++----------------+
+| MYSQL          |
++----------------+
+1 row in set (0.05 sec)
+计算长度
+mysql> select length("mysql");
++-----------------+
+| length("mysql") |
++-----------------+
+|               5 |
++-----------------+
+1 row in set (0.00 sec)
+去除左空
+mysql> select rtrim("   ss   ");
++-------------------+
+| rtrim("   ss   ") |
++-------------------+
+|    ss             |
++-------------------+
+1 row in set (0.00 sec)
+去除右空
+mysql> select ltrim("   ss   ");
++-------------------+
+| ltrim("   ss   ") |
++-------------------+
+| ss                |
++-------------------+
+
+重复
+mysql> select repeat("mysql",3);
++-------------------+
+| repeat("mysql",3) |
++-------------------+
+| mysqlmysqlmysql   |
++-------------------+
+1 row in set (0.02 sec)
+
+替换
+mysql> select replace("linux is very good","linux","php");
++---------------------------------------------+
+| replace("linux is very good","linux","php") |
++---------------------------------------------+
+| php is very good                            |
++---------------------------------------------+
+1 row in set (0.00 sec)
+子字符串，注意，第一个字符从1开始计数
+mysql> select substring("mysql is linux",1,8);
++---------------------------------+
+| substring("mysql is linux",1,8) |
++---------------------------------+
+| mysql is                        |
++---------------------------------+
+1 row in set (0.00 sec)
+生成10个空格
+mysql> select space(10);
++------------+
+| space(10)  |
++------------+
+|            |
++------------+
+
+综合
+mysql> select concat(space("10"),"linux");
++-----------------------------+
+| concat(space("10"),"linux") |
++-----------------------------+
+|           linux             |
++-----------------------------+
+
+十进制转换为二进制
+select bin(256)
+ceiling(向上取整数)
+floor(向下取整)
+
+取最大值,最小值，一般配合聚合时候采取用
+max(col)
+min(col)
+
+取平方根
+sqrt()
+取随机数
+rand()
+随机排序表
+select * from t1 order by rand();
+
+日期函数
+curdate()		当期日期
+curtime()		当期时间
+now()			当前时间日期
+unix_timestamp(date);	当前时间戳
+
+week(date)		一年中的第几周
+year(date)		date中的年份
+datediff(date1,date2)	date1 到date2 的天数
+
+1.5 mysql 预处理语言
+设置stmt1预处理
+传递
+> ? prepare
+> prepare stmt1 from "select * from t1 where id>?";
+> set @i=1;
+> select @i;
+
+> execute stmt1 using @i;
+
+相当于 @i是？号
+
+drop prepare stmt1;
+show prepare;
+
+1.6 事务处理
+关闭自动提交功能
+> set autocommit=0;
+从t1中删除了一条记录
+> delete from t1 where id=11;
+此时做一个p1还原点
+> savepoint p1;
+>delet from t1 where id=10;
+再次做一个p2还原点
+> savepoint p2;
+此时恢复到p1还原点，后面p2还原点会自动失效
+> rollback to p1;
+退回到最原始的还原点
+> rollback;
+
+修改表引擎
+alter table t1 engine=innodb;
+显示autocommit设置
+select @@autocommit;
+
+合计信息 with rollup 
+select cname,pname,count(pname) from t1 group by c
+
+
+查看使用次数,这次登录以来的操作
+show status like "com_insert%";
+show status like "com_delete%";
+show status like "com_update%";
+show status like "com_select%";
+
+全局，服务器启动以来
+show global status like "com_insert%";
+show global status like "com_delete%";
+show global status like "com_update%";
+show global status like "com_select%";
+
+查看innodb_row 影响函数行数
+show status like "innodb_rows%";
+
+优化步骤
+1
+查看慢查询语句
+2 分析sql语句
+show status like "connections";		连接mysql 的次数，成功和不成功都记录
+show status like "uptime%";		//服务器工作时间秒数
+show status like "slow_queries"  //慢查询的次数
+//查询查询时间超过10秒的查询语句
+
+定位执行效率较低的sql语句
+explain select * from t1 where id=1000;
+
+导入导出
+show global variables like '%secure%';	
+
+| secure_auth      | ON    |
+| secure_file_priv | NULL  |
+
+当secure_file_priv的值为null ，表示限制mysqld 不允许导入|导出
+当secure_file_priv的值为/tmp/ ，表示限制mysqld 的导入|导出只能发生在/tmp/目录下
+当secure_file_priv的值没有具体值时，表示不对mysqld 的导入|导出做限制
+可是查看了mysql.cnf中居然没有对这个参数进行设定，就说明这个参数默认便是null
+所以再mysql.cnf中的[mysqld]加入secure_file_priv = 
+
+
+
+
+
+
+例子 
+request_api_log_open含有1717023 条数据
+
+ explain select count(*) from yzb_request_api_log_open where (`add_time` >= 1516550400) AND (`add_time` <= 1516636799);
+
+
+ALTER TABLE `yzb_request_api_log_open`(
+PRIMARY KEY (`id`, `date`), 
+) PARTITION BY RANGE(add_time) 
+  PARTITIONS 10 (
+    PARTITION `p0` VALUES LESS THAN (1512572252),
+    PARTITION `p1` VALUES LESS THAN (1512896422),
+    PARTITION `p2` VALUES LESS THAN (1513087287),
+    PARTITION `p3` VALUES LESS THAN (1513759252),
+    PARTITION `p4` VALUES LESS THAN (1514427573),
+    PARTITION `p5` VALUES LESS THAN (1514927573),
+    PARTITION `p6` VALUES LESS THAN (1515427573),
+    PARTITION `p7` VALUES LESS THAN (1515927573),
+    PARTITION `p8` VALUES LESS THAN (1516527573),
+    PARTITION `p9` VALUES LESS THAN (MAXVALUE)
+  ) ;
+
+
+
+ ALTER TABLE `test_request_api_log_open`
+PARTITION BY RANGE(add_time) 
+  PARTITIONS 17 (
+    PARTITION `p0` VALUES LESS THAN (1512572252),
+    PARTITION `p1` VALUES LESS THAN (1512896422),
+    PARTITION `p2` VALUES LESS THAN (1513087287),
+    PARTITION `p3` VALUES LESS THAN (1513759252),
+    PARTITION `p4` VALUES LESS THAN (1514427573),
+    PARTITION `p5` VALUES LESS THAN (1514927573),
+    PARTITION `p6` VALUES LESS THAN (1515427573),
+    PARTITION `p7` VALUES LESS THAN (1515927573),
+    PARTITION `p8` VALUES LESS THAN (1516527573),
+    PARTITION `p9` VALUES LESS THAN (1517027573),   
+    PARTITION `p10` VALUES LESS THAN (1517527573),  
+    PARTITION `p11` VALUES LESS THAN (1518027573),    
+    PARTITION `p12` VALUES LESS THAN (1518527573),    
+    PARTITION `p13` VALUES LESS THAN (1519027573),  
+    PARTITION `p14` VALUES LESS THAN (1519527573),    
+    PARTITION `p15` VALUES LESS THAN (1520027573),  
+    PARTITION `p900` VALUES LESS THAN (MAXVALUE)
+  );
+
+
+
+select count(*) as sum ,SUM(CASE add_time WHEN 1 THEN 1 ELSE 0 END) as sum_1 from test_aa;
+
+
+
+优化
+select user_id,count(`user_id`),app_id,count(`app_id`),interface_id,count(`interface_id`) from yzb_request_api_log_open group by user_id;
+
+
+user_id | count(`user_id`) | 
++---------+------------------+
+|       2 |          1717023 |
+
+ user_id | count(`user_id`) | app_id | count(`app_id`) | interface_id | count(`interface_id`) |
++---------+------------------+--------+-----------------+--------------+-----------------------+
+|       2 |            32091 | 100000 |           32091 |            2 |                 32091 |
+|       2 |          1684836 | 100000 |         1684836 |            6 |               1684836 |
+|       2 |               30 | 100001 |              30 |           14 |                    30 |
+|       2 |                1 | 100002 |               1 |           24 |                     1 |
+|      16 |                1 | 100003 |               1 |            2 |                     1 |
+|       2 |                2 | 100004 |               2 |           22 |                     2 |
+|       2 |               52 | 100005 |              52 |           23 |                    52 |
+|       2 |                9 | 100006 |               9 |           34 |                     9 |
+|       2 |                2 | 100007 |               2 |           35 |                     2 |
+
+#1717025
+#啥也不加  加add_time主键    user_id索引  app_id索引  interface_id索引 add_time索引(最优)  
+#45.34,44.89  29.06,28.94     46.46         36.37       24.90           0.0
+
+
+#啥也不加  加add_time主键    user_id索引  app_id索引 interface_id索引  add_time索引(最优)
+#7.54,7.52   4.84,4.86      9.70          6.23        7.11               0.0
+
+SELECT
+ (
+  SELECT count(*) 
+  FROM `yzb_request_api_log_open` 
+  WHERE (app_id=a.app_id and interface_id=i.id) AND (`add_time` >= 1516636800) AND (`add_time` <= 1516723199) AND (`status`=1)
+  ) as success_num,
+ (
+  SELECT count(*) FROM `yzb_request_api_log_open` 
+  WHERE (app_id=a.app_id and interface_id=i.id) AND (`add_time` >= 1516636800) AND (`add_time` <= 1516723199)
+  ) as count_num, `i`.`name`, `i`.`id` 
+ FROM `yzb_interface` `i` 
+ inner join `yzb_api_app_open` `a` ON i.service_id=a.service_id 
+ WHERE `a`.`app_id`='100000'
+
+SELECT c.success_num as success_num,c.count_num as count_num, `i`.`id`, `i`.`name` 
+FROM `yzb_interface` `i` 
+inner join `yzb_api_app_open` `a` ON i.service_id=a.service_id 
+left join (SELECT count(*) count_num, SUM(CASE status WHEN 1 THEN 1 ELSE 0 END) as success_num, `r`.`interface_id` 
+  FROM `yzb_request_api_log_open` `r` 
+  WHERE ((`r`.`user_id`=2) AND (`r`.`app_id`='100000')) AND (`r`.`add_time` >= 1516636800) AND (`r`.`add_time` <= 1516723199) 
+  GROUP BY `r`.`interface_id`) `c` 
+ON c.interface_id=i.id 
+WHERE `a`.`app_id`='100000'
