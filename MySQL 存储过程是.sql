@@ -23,6 +23,18 @@ begin
     */
 end;
 二、调用 MySQL 存储过程 
+
+注意时区
+select now(); 查看mysql系统时间。和当前时间做对比
+set global time_zone = '+8:00';设置时区更改为东八区
+flush privileges; 刷新权限
+需要高级权限
+
+要使event起作用，MySQL的常量GLOBAL event_scheduler必须为on或者是1。
+SHOW VARIABLES LIKE 'event_scheduler';
+SET GLOBAL event_scheduler = 1;
+
+
 call pr_add(10, 20);
 执行 MySQL 存储过程，存储过程参数为 MySQL 用户变量。
 set @a = 10;
@@ -452,7 +464,10 @@ CALL update_partition_add_last_day('test','test_ee',7);
 
 
 -- ----------------------------
--- 一、 分区无最大值
+-- 一、 分区无最大值 
+-- 注意 分区时候分区字段一定是主键或者是唯一索引
+-- 也就是 当存在primary key 时候，primary key里一定要有 该分区字段
+-- 当存在 unique key 时候 ，unique key内一定有 该分区字段
 -- Procedure structure for update_partition_add_last_day
 -- ----------------------------
 DROP PROCEDURE IF EXISTS `update_partition_add_last_day`;
@@ -555,4 +570,175 @@ PREPARE stmt_NAME FROM @PARTITION_SENTENS;
 COMMIT ;
 END
 ;;
+DELIMITER ;
+
+-- -------------------------------------
+-- 加分区，根据月 ，需要计算下一个月，因此时区要设置正确，另外要分区字段为Int类型
+-- -------------------------------------
+DROP PROCEDURE IF EXISTS `update_partition_add_month_with_int`;
+DELIMITER ;;
+CREATE PROCEDURE `update_partition_add_month_with_int`(IN databaseName varchar(40),IN tableName varchar(40),IN `month_add` int)
+    L_END:BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION ROLLBACK;
+    START TRANSACTION;
+
+    SELECT REPLACE(PARTITION_NAME,'p','') INTO @LAST_PARTITION
+    FROM INFORMATION_SCHEMA.PARTITIONS
+    WHERE ( TABLE_SCHEMA=databaseName ) AND (TABLE_NAME = tableName )
+    ORDER BY partition_ordinal_position DESC LIMIT 1;
+
+    SELECT @LAST_PARTITION;
+
+    SET @NEXT_NAME=DATE_FORMAT(DATE_ADD(@LAST_PARTITION,INTERVAL `month_add` MONTH),"%Y_%m_%d");
+    SELECT @NEXT_NAME;
+    SET @NEXT_TIMESTAMP=UNIX_TIMESTAMP(@NEXT_NAME);
+
+    SELECT @NEXT_TIMESTAMP;
+
+    SET @addpartition=CONCAT('ALTER TABLE ',tableName,' ADD PARTITION (PARTITION `p',@NEXT_NAME,'` VALUES LESS THAN ( ',@NEXT_TIMESTAMP,'))');
+    /* 输出查看增加分区语句*/
+    SELECT @addpartition;
+    PREPARE stmt2 FROM @addpartition;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
+    COMMIT ;
+  end
+;;
+DELIMITER ;
+
+-- --------------------------------
+-- 加分区，根据日，，因此时区要设置正确，另外要分区字段为Int类型
+-- --------------------------------
+DROP PROCEDURE IF EXISTS `update_partition_add_day_with_int`;
+DELIMITER ;;
+CREATE PROCEDURE `update_partition_add_day_with_int`(IN databaseName varchar(40),IN tableName varchar(40),IN `day_add` int)
+    L_END:BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION ROLLBACK;
+    START TRANSACTION;
+
+    SELECT REPLACE(PARTITION_NAME,'p','') INTO @LAST_PARTITION
+    FROM INFORMATION_SCHEMA.PARTITIONS
+    WHERE ( TABLE_SCHEMA=databaseName ) AND (TABLE_NAME = tableName )
+    ORDER BY partition_ordinal_position DESC LIMIT 1;
+
+    SELECT @LAST_PARTITION;
+
+    SET @NEXT_NAME=DATE_FORMAT(DATE_ADD(@LAST_PARTITION,INTERVAL `day_add` DAY),"%Y_%m_%d");
+    SELECT @NEXT_NAME;
+    SET @NEXT_TIMESTAMP=UNIX_TIMESTAMP(@NEXT_NAME);
+
+    SELECT @NEXT_TIMESTAMP;
+
+    SET @addpartition=CONCAT('ALTER TABLE ',tableName,' ADD PARTITION (PARTITION `p',@NEXT_NAME,'` VALUES LESS THAN ( ',@NEXT_TIMESTAMP,'))');
+    /* 输出查看增加分区语句*/
+    SELECT @addpartition;
+    PREPARE stmt2 FROM @addpartition;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
+    COMMIT ;
+  end
+;;
+DELIMITER ;
+
+-- --------------------------
+-- 每隔多少天加分区 注意分区字段为datetime型
+-- --------------------------
+DROP PROCEDURE IF EXISTS `update_partition_add_last_day_with_TO_DAYS`;
+DELIMITER $$
+CREATE  PROCEDURE `update_partition_add_last_day_with_TO_DAYS`(IN databaseName varchar(40),IN tableName varchar(40),IN `date_add` int)
+    L_END:BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION ROLLBACK;
+    START TRANSACTION;
+
+    SELECT REPLACE(PARTITION_NAME,'p','') INTO @LAST_PARTITION
+    FROM INFORMATION_SCHEMA.PARTITIONS
+    WHERE ( TABLE_SCHEMA=databaseName ) AND (TABLE_NAME = tableName )
+    ORDER BY partition_ordinal_position DESC LIMIT 1;
+
+    SELECT @LAST_PARTITION;
+
+    SET @NEXT_NAME=DATE_FORMAT(DATE_ADD(@LAST_PARTITION,INTERVAL `date_add` DAY),"%Y_%m_%d");
+    SELECT @NEXT_NAME;
+    SET @NEXT_TIMESTAMP=TO_DAYS(@NEXT_NAME);
+
+    SELECT @NEXT_TIMESTAMP;
+
+    SET @addpartition=CONCAT('ALTER TABLE ',tableName,' ADD PARTITION  (PARTITION `p',@NEXT_NAME,'` VALUES LESS THAN ( ',@NEXT_TIMESTAMP,'))');
+    /* 输出查看增加分区语句*/
+    SELECT @addpartition;
+    PREPARE stmt2 FROM @addpartition;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
+    COMMIT ;
+  end
+$$
+DELIMITER ;
+
+-- ---------------------
+-- 加一个分区  注意分区字段为datetime型
+-- ---------------------
+DROP PROCEDURE IF EXISTS `update_partition_add_month_with_TO_DAYS`;
+DELIMITER $$
+CREATE  PROCEDURE `update_partition_add_month_with_TO_DAYS`(IN databaseName varchar(40),IN tableName varchar(40),IN `date_add` int)
+    L_END:BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION ROLLBACK;
+    START TRANSACTION;
+
+    SELECT REPLACE(PARTITION_NAME,'p','') INTO @LAST_PARTITION
+    FROM INFORMATION_SCHEMA.PARTITIONS
+    WHERE ( TABLE_SCHEMA=databaseName ) AND (TABLE_NAME = tableName )
+    ORDER BY partition_ordinal_position DESC LIMIT 1;
+
+    SELECT @LAST_PARTITION;
+
+    SET @NEXT_NAME=DATE_FORMAT(DATE_ADD(@LAST_PARTITION,INTERVAL `date_add` MONTH),"%Y_%m_%d");
+    SELECT @NEXT_NAME;
+    SET @NEXT_TIMESTAMP=TO_DAYS(@NEXT_NAME);
+
+    SELECT @NEXT_TIMESTAMP;
+
+    SET @addpartition=CONCAT('ALTER TABLE ',tableName,' ADD PARTITION  (PARTITION `p',@NEXT_NAME,'` VALUES LESS THAN ( ',@NEXT_TIMESTAMP,'))');
+    /* 输出查看增加分区语句*/
+    SELECT @addpartition;
+    PREPARE stmt2 FROM @addpartition;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
+    COMMIT ;
+  end
+$$
+DELIMITER ;
+
+
+
+-- ----------
+-- 删除分区
+-- ----------
+DROP PROCEDURE IF EXISTS `drop_last_partition`;
+DELIMITER $$
+CREATE  PROCEDURE `drop_last_partition`(IN databaseName varchar(40),IN tableName varchar(40))
+    L_END:BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION ROLLBACK;
+    START TRANSACTION;
+
+    SELECT PARTITION_NAME INTO @LAST_PARTITION
+    FROM INFORMATION_SCHEMA.PARTITIONS
+    WHERE ( TABLE_SCHEMA=databaseName ) AND (TABLE_NAME = tableName )
+    ORDER BY partition_ordinal_position DESC LIMIT 1;
+
+    SELECT @LAST_PARTITION;
+
+    SET @addpartition=CONCAT('ALTER TABLE ',tableName,' DROP PARTITION ',@LAST_PARTITION);
+    /* 输出查看增加分区语句*/
+    SELECT @addpartition;
+    PREPARE stmt2 FROM @addpartition;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
+    COMMIT ;
+  end
+$$
 DELIMITER ;
