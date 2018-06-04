@@ -206,6 +206,9 @@ sc delete MySQL[服务名称]
  mysql>  grant all privileges on yzbm.* to yzbm@localhost identified by '1234569';
  mysql>  grant all privileges on yzbs1.* to yzbs1@localhost identified by '1234569';
 
+
+ mysql>  grant privileges slave on test.* to yzb@"%" identified by '1234569';
+
 mysql> grant all privileges on yzbm.* to slave1@localhost identified by "1234569";
 
 

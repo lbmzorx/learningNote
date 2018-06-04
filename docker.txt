@@ -1,0 +1,92 @@
+安装redis 服务
+
+
+虚拟机上
+
+安装docker-compose 
+https://www.jianshu.com/p/10d476c5ade1
+https://blog.csdn.net/weixin_38648597/article/details/78951862
+
+
+查看docker 日志 
+https://blog.csdn.net/wen_1108/article/details/78356655
+
+例：实时查看docker容器名为s12的最后10行日志
+
+$ sudo docker logs -f -t --tail 10 s12
+
+1 出现 
+
+'logfile /var/log/redis_6379.log'
+2018-05-30T13:41:10.260492502Z Can't open the log file: Permission denied
+
+添加文件修改 在 目录 logs/redis/redis_6379.log
+
+chmod 777 logs/redis/redis_6379.log
+
+2 bind ip 问题 
+bind 0.0.0.0 为所有IP 都可以访问
+
+
+3 设置多个redis 服务容器
+
+设置时候注意
+yml 文件的编辑 
+http://www.ruanyifeng.com/blog/2016/07/yaml.html
+
+一定要空格对齐 
+
+
+```
+version: '2'
+services:
+    redis-db:
+      build: ./redis
+      ports:
+        - "6379:6379"
+      volumes:
+        - ./redis/redis.conf:/etc/redis/redis.conf:rw
+        - ../data/redis:/data:rw
+        - ../logs/redis:/var/log/:rw
+      restart: always
+    redis02:
+      image: redis:4.0
+      ports:
+        - "6382:6379"
+      container_name: redis02
+    redis03:
+      image: redis:4.0
+      ports:
+        - "6383:6379"
+      container_name: redis03
+    redis04:
+      image: redis:4.0
+      ports:
+        - "6384:6379"
+      container_name: redis04
+
+```
+
+
+安装 rudy
+# yum install ruby
+
+# yum install rubygems
+
+版本问题
+https://www.cnblogs.com/carryping/p/7447823.html
+https://www.cnblogs.com/PatrickLiu/p/8454579.html
+
+源代码 安装 
+先装 gcc
+
+
+安装rudy
+https://www.cnblogs.com/ligao/p/8664290.html
+
+安装成功 
+
+
+
+
+
