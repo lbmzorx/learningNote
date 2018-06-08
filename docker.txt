@@ -119,6 +119,7 @@ daemonize yes
 port  26379
 logfile  /var/log/redis/sentinel.log
 pidfile  /var/run/sentinel.pid
+
 sentinel monitor master8000 192.168.56.101 8000 2
 #5秒内master6800没有响应，就认为SDOWN
 sentinel down-after-milliseconds master8000 5000  
@@ -132,7 +133,7 @@ sentinel announce-ip
 广播地址
 
 设置密码，如果监控redis含有密码
-sentinel auth-pass mymaster sl788zdfwc8zi
+sentinel auth-pass mymaster password
 
 解读 
 sentinel monitor master001 192.168.110.101 6379 2:Sentinel去监视一个名为master001的主redis实例，这个主实例的IP地址为本机地址192.168.110.101，端口号为6379，而将这个主实例判断为失效至少需要2个 Sentinel进程的同意，只要同意Sentinel的数量不达标，自动failover就不会执行
@@ -153,6 +154,111 @@ sentinel notification-script \ \
 sentinel client-reconfig-script \ \ 
 在故障转移结束后，触发应对路径的脚本，并向脚本发送故障转移结果的参数。
 例如：sentinel client-reconfig-script mymaster /var/redis/reconfig.sh。
+
+
+sentinel支持的合法命令如下：
+
+PING sentinel回复PONG.
+
+SENTINEL masters 显示被监控的所有master以及它们的状态.
+
+SENTINEL master <master name> 显示指定master的信息和状态；
+
+SENTINEL slaves <master name> 显示指定master的所有slave以及它们的状态；
+
+SENTINEL get-master-addr-by-name <master name> 返回指定master的ip和端口，如果正在进行failover或者failover已经完成，将会显示被提升为master的slave的ip和端口。
+
+SENTINEL reset <pattern> 重置名字匹配该正则表达式的所有的master的状态信息，清楚其之前的状态信息，以及slaves信息。
+
+SENTINEL failover <master name> 强制sentinel执行failover，并且不需要得到其他sentinel的同意。但是failover后会将最新的配置发送给其他sentinel。
+
+动态修改Sentinel配置
+从redis2.8.4开始，sentinel提供了一组API用来添加，删除，修改master的配置。
+
+需要注意的是，如果你通过API修改了一个sentinel的配置，sentinel不会把修改的配置告诉其他sentinel。你需要自己手动地对多个sentinel发送修改配置的命令。
+
+以下是一些修改sentinel配置的命令：
+
+SENTINEL MONITOR <name> <ip> <port> <quorum> 这个命令告诉sentinel去监听一个新的master
+
+SENTINEL REMOVE <name> 命令sentinel放弃对某个master的监听
+
+SENTINEL SET <name> <option> <value> 这个命令很像Redis的CONFIG SET命令，用来改变指定master的配置。支持多个<option><value>。例如以下实例：
+
+SENTINEL SET objects-cache-master down-after-milliseconds 1000
+
+只要是配置文件中存在的配置项，都可以用SENTINEL SET命令来设置。这个还可以用来设置master的属性，比如说quorum(票数)，而不需要先删除master，再重新添加master。例如：
+
+SENTINEL SET objects-cache-master quorum 5
+
+#坑
+1、protected-mode no 　　#保护模式如果开启只接受回环地址的ipv4和ipv6地址链接，拒绝外部链接，而且正常应该配置多个哨兵，避免一个哨兵出现独裁情况，如果配置多个哨兵那如果开启也会拒绝其他sentinel的连接。导致哨兵配置无法生效。
+
+2、WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+
+echo 511 > /proc/sys/net/core/somaxconn
+
+命令就把这个问题解决了。但是这个只是暂时的。如果想要永久解决，打开
+/etc/sysctl.conf
+
+3、在这里面添net.core.somaxconn= 1024 然后执行sysctl -p 就可以永久消除这个warning
+
+意思是：overcommit_memory参数设置为0！在内存不足的情况下，后台程序save可能失败。建议在文件 /etc/sysctl.conf 中将overcommit_memory修改为1。
+
+临时解决方法：echo "vm.overcommit_memory=1" > /etc/sysctl.conf
+
+永久解决方法：将其写入/etc/sysctl.conf文件中。
+
+参考：有关linux下redis overcommit_memory的问题
+
+4、you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix thisissue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain thesetting after a reboot. Redis must be restarted after THP is disabled.
+
+意思是：你使用的是透明大页，可能导致redis延迟和内存使用问题。执行 echo never > /sys/kernel/mm/transparent_hugepage/enabled 修复该问题。
+
+临时解决方法：
+
+echo never > /sys/kernel/mm/transparent_hugepage/enabled。
+
+永久解决方法：
+
+将其写入/etc/rc.local文件中。
+
+
+```
+DENIED Redis is running in protected mode because protected mode is enabled, no
+bind address was specified, no authentication password is requested to clients.
+In this mode connections are only accepted from the loopback interface. If you w
+ant to connect from external computers to Redis you may adopt one of the followi
+ng solutions: 1) Just disable protected mode sending the command 'CONFIG SET pro
+tected-mode no' from the loopback interface by connecting to Redis from the same
+ host the server is running, however MAKE SURE Redis is not publicly accessible
+from internet if you do so. Use CONFIG REWRITE to make this change permanent. 2)
+ Alternatively you can just disable the protected mode by editing the Redis conf
+iguration file, and setting the protected mode option to 'no', and then restarti
+ng the server. 3) If you started the server manually just for testing, restart i
+t with the '--protected-mode no' option. 4) Setup a bind address or an authentic
+ation password. NOTE: You only need to do one of the above things in order for t
+he server to start accepting connections from the outside.
+```
+
+实际设置了密码
+
+sentinel 
+
+```
+127.0.0.1:26379> auth password
+(error) ERR unknown command 'auth'
+127.0.0.1:26379> password password
+(error) ERR unknown command 'password'
+127.0.0.1:26379> requirepass password
+(error) ERR unknown command 'requirepass'
+127.0.0.1:26379> auth "password"
+(error) ERR unknown command 'auth'
+127.0.0.1:26379> AUTH password
+(error) ERR unknown command 'AUTH'
+127.0.0.1:26379> AUTH "password"
+(error) ERR unknown command 'AUTH'
+```
 
 
 [root@testhost bin]# ./redis-cli -h 127.0.0.1 -p 26379
