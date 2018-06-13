@@ -1,0 +1,249 @@
+<?php
+/**
+ */
+
+ $.each(dataJSON.df,function (k,v) {
+            var replace=k.replace(/\//g,'_');
+            $("#system-df-total-"+replace).html(v.total);
+            $("#system-df-free-"+replace).html(v.free);
+            $("#system-df-used-"+replace).html(v.used);
+        });
+
+/**
+     * nginx 错误日志
+     */
+    public function actionNginxServiceLog(){
+
+        $request=\yii::$app->request;
+        $n=$request->get('num')?:100;
+        $filename=$request->get('filename');
+
+        $path=\yii::getAlias('@runtime/nginxlog');
+        $appStr=[];
+        $filenames=[];
+        $fileinfo=[];
+        if(is_dir($path)){
+            $filelist=FileHelper::findFiles($path);
+            if($filelist){
+                foreach ($filelist as $k=>$v){
+                    $filenames[$k]=str_replace($path,'',$v);
+                    if(preg_match('/\//',$filenames[$k])){
+                        $delemer='/';
+                    }else{
+                        $delemer='\\';
+                    }
+                    $filenames[$k]=ltrim($filenames[$k],$delemer);
+                    $fileinfo[$filenames[$k]]=['size'=>$this->setUnit(filesize($v))];
+                }
+                if(!$filename){
+                    $filename=$filenames[0];
+                }
+                if(in_array($filename,$filenames)){
+                    $key=array_flip($filenames);
+                    $file=$filelist[$key[$filename]];
+
+                    if(file_exists($file) && is_readable($file)) {
+                        $appStr=$this->getFileLastRow($file,$n);
+                    }
+                }
+            }
+        }
+        return $this->renderPartial('nginx-service-log',['app_log'=>$appStr,'filename'=>$filenames,'fileinfo'=>$fileinfo]);
+    }
+
+
+    protected function setUnit($value){
+        $unitlevel=['KB'=>1,'MB'=>2,'GB'=>3,'TB'=>4,'PB'=>5];
+        $len=strlen((string)$value);
+        if($len>=12) {
+            $sub=4;
+        }elseif($len>=9){
+            $sub=3;
+        }elseif($len>=6){
+            $sub=2;
+        }elseif($len>=3){
+            $sub=1;
+        }else{
+            $sub=0;
+        }
+
+        $subTotal=1;
+        for($i=0;$i<$sub;$i++){
+            $subTotal=$subTotal*1024;
+        }
+        $value=round($value/$subTotal,3);
+        $flip=array_flip($unitlevel);
+        $unit=isset($flip[$sub])?$flip[$sub]:'B';
+        return $value.$unit;
+    }
+
+    public function actionNginxDownloadLog(){
+        $request=\yii::$app->request;
+        $filename=$request->get('filename');
+        $pathdownload=$request->get('path');
+        $path=\yii::getAlias('@runtime/'.$pathdownload);
+        $filenames=[];
+        if(is_dir($path)){
+            $filelist=FileHelper::findFiles($path);
+            if($filelist){
+                foreach ($filelist as $k=>$v){
+                    $filenames[$k]=str_replace($path,'',$v);
+                    if(preg_match('/\//',$filenames[$k])){
+                        $delemer='/';
+                    }else{
+                        $delemer='\\';
+                    }
+                    $filenames[$k]=ltrim($filenames[$k],$delemer);
+                }
+                if(!$filename){
+                    $filename=$filenames[0];
+                }
+                if(in_array($filename,$filenames)){
+                    $key=array_flip($filenames);
+                    $file=$filelist[$key[$filename]];
+                    if(file_exists($file) && is_readable($file)) {
+                        if(filesize($file)<10*1024*1024){
+                            \yii::$app->response->sendFile($file);
+                            return \yii::$app->response;
+                        }else{
+                            $n=1000;
+                            $appStr=$this->getFileLastRow($file,$n);
+                            \yii::$app->response->sendContentAsFile(implode("\n",$appStr),$filename);
+                            return \yii::$app->response;
+                        }
+                    }
+                }
+            }
+        }
+        return $this->redirect('nginx-service-log');
+    }
+
+    /**
+     * php 错误日志
+     */
+    public function actionPhpServiceLog(){
+
+        $request=\yii::$app->request;
+        $n=$request->get('num')?:100;
+        $filename=$request->get('filename');
+
+        $path=\yii::getAlias('@runtime/phplog');
+        $appStr=[];
+        $fileinfo=[];
+        $filenames=[];
+        if(is_dir($path)){
+            $filelist=FileHelper::findFiles($path);
+            if($filelist){
+                foreach ($filelist as $k=>$v){
+                    $filenames[$k]=str_replace($path,'',$v);
+                    if(preg_match('/\//',$filenames[$k])){
+                        $delemer='/';
+                    }else{
+                        $delemer='\\';
+                    }
+                    $filenames[$k]=ltrim($filenames[$k],$delemer);
+                    $fileinfo[$filenames[$k]]=['size'=>$this->setUnit(filesize($v))];
+                }
+                if(!$filename){
+                    $filename=$filenames[0];
+                }
+                if(in_array($filename,$filenames)){
+                    $key=array_flip($filenames);
+                    $file=$filelist[$key[$filename]];
+                    if(file_exists($file) && is_readable($file)) {
+                        $appStr=$this->getFileLastRow($file,$n);
+                    }
+                }
+            }
+        }
+        return $this->renderPartial('nginx-service-log',['app_log'=>$appStr,'filename'=>$filenames,'fileinfo'=>$fileinfo]);
+    }
+
+
+    protected function getFileLastRow($filename,$n){
+        if(!$fp=fopen($filename,'r')){
+            return false;
+        }
+        $pos=-2;
+        $eof="";
+        $str=[];
+        while($n>0){
+            while($eof!="\n"){
+                if(!fseek($fp,$pos,SEEK_END)){
+                    $eof=fgetc($fp);
+                    $pos--;
+                }else{
+                    break;
+                }
+            }
+            $str[]=fgets($fp);
+            $eof="";
+            $n--;
+        }
+        return $str;
+    }
+
+
+
+use yii\helpers\Html;
+$request=\yii::$app->request;
+if( \yii::$app->controller->action->id=='nginx-service-log'){
+    $this->title='Nginx日志';
+    $pathdownload='nginxlog';
+}else{
+    $this->title='PHP日志';
+    $pathdownload='phplog';
+}
+
+?>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>日志-<?=$this->title?>
+                        <small>全部</small>
+                    </h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="tabs-container">
+                        <ul class="nav nav-tabs">
+                            <?php foreach ($filename as $k=>$v):?>
+                                <li class="<?=($request->get('filename')==$v)||($request->get('filename')=='' && $k==0)?'active':''?>">
+                                    <a href="<?=\yii\helpers\Url::to(['','filename'=>$v])?>"><?=$v?></a></li>
+                            <?php endforeach;?>
+                        </ul>
+                        <div class="tab-content m-b">
+                        </div>
+                    </div>
+                    <div class="seach">
+                        <?= Html::beginForm(['',], 'get',['id'=>'search-form']) ?>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <div class="input-group m-b"><span class="input-group-addon">行</span>
+                                    <input name="num" value="" placeholder="显示行数" class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+                        <?= Html::submitButton('查询', ['class' => 'btn btn-primary', 'style' => 'position:relative;top:-60px;margin-right:100px;float: right;']) ?>
+                        <?= Html::endForm() ?>
+                    </div>
+                    <div >
+                        <?php foreach ($filename as $k=>$v):?>
+                            <a class="btn btn-primary btn-sm" href="<?=\yii\helpers\Url::to(['nginx-download-log','filename'=>$v,'path'=>$pathdownload])?>" target="_blank"
+                               title="超过10M文件只下载其中的后1000条记录">下载<?=$v?> <?=$fileinfo[$v]['size']?></a>
+                        <?php endforeach;?>
+                    </div>
+                   <div >
+                       <?php if($app_log):?>
+                           <?php foreach ($app_log as $k=>$v):?>
+                               <pre><?=$k?>: <?=$v?></pre>
+                           <?php endforeach;?>
+                       <?php endif;?>
+                   </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -315,9 +315,43 @@ https://www.cnblogs.com/ligao/p/8664290.html
 redis 的高可用 方案
 
 
+安装rabbit
 
 
 
 
 
 
+1、数据库
+2、nginx
+
+
+nginx 记录 api请求
+记录日志 存放 data盘
+
+配置文件 搜索功能
+
+nginx 配置 api 日志 
+
+缓存 清理全部  修改 
+
+缓存 内部清理
+
+
+
+分表
+
+yzb_order_recharge
+yzb_order_recharge_sup
+
+yzb_order_recharge_sup_status_operation_log //追踪
+
+
+yzb_order_user_money_log  // add_time 需要更换
+
+yzb_user_money_trade_log  // time 需要换
+
+yzb_request_api_log_open  //time
+yzb_request_api_log_open_info //无time
+
+yzb_mobile_balance_query_log // add_time
