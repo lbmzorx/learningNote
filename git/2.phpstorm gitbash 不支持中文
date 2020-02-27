@@ -1,0 +1,9 @@
+idea/PhpStorm中的terminal修改为git bash不支持中文问题解决
+
+找到GitBash安装目录，修改Git\etc\bash.bashrc文件，在最后添加
+
+```bash
+# support chinese
+export LANG="zh_CN.UTF-8"
+export LC_ALL="zh_CN.UTF-8"
+```
