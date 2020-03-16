@@ -1,4 +1,4 @@
-# 1.ÎÄ¼şÅäÖÃ
+# 1.æ–‡ä»¶é…ç½®
 
 ```
 syntax on
@@ -13,93 +13,93 @@ set history=1000
 set termencoding=utf-8
 
 set fencs=utf-8,gbk,utf-16,utf-32,ucs-bom
-set fileencoding=gb18030
+" set fileencoding=gb18030
 set fileencodings=utf-8,gb18030,utf-16,big5
 
-set langmenu=zh_CN
-let $LANG='zh_CH.UTF-8'
-language messages zh_CN.UTF-8
-source $VIMRUNTIME/delmenu.vim
-source $VIMRUNTIME/menu.vim
-source $VIMRUNTIME/mswin.vim
-behave mswin
+" set langmenu=zh_CN
+" let $LANG='zh_CH.UTF-8'
+" language messages zh_CN.UTF-8
+" source $VIMRUNTIME/delmenu.vim
+" source $VIMRUNTIME/menu.vim
+" source $VIMRUNTIME/mswin.vim
+" behave mswin
 
-" ¹Ø±ÕÉÁÆÁ
+" å…³é—­é—ªå±
 set vb t_vb=
 
-"1 »ù±¾ÉèÖÃ
+"1 åŸºæœ¬è®¾ç½®
 set encoding=utf-8
-set cindent "C ²å¼ş
-set fileformats=unix "ÎÄ¼şÀàĞÍÑ¡Ôñunix
-set showcmd " Õ¹Ê¾ÃüÁî
-set showmode "ÔÚµ×²¿ÏÔÊ¾£¬µ±Ç°´¦ÓÚÃüÁîÄ£Ê½»¹ÊÇ²åÈëÄ£Ê½
-set mouse=  " ¹Ø±ÕÊó±ê
-set wrap " ÉèÖÃ×Ô¶¯»»ĞĞ£¬ Ò»ĞĞ²»¹»Á½ĞĞÕ¹Ê¾
+set cindent "C æ’ä»¶
+set fileformats=unix "æ–‡ä»¶ç±»å‹é€‰æ‹©unix
+set showcmd " å±•ç¤ºå‘½ä»¤
+set showmode "åœ¨åº•éƒ¨æ˜¾ç¤ºï¼Œå½“å‰å¤„äºå‘½ä»¤æ¨¡å¼è¿˜æ˜¯æ’å…¥æ¨¡å¼
+set mouse=  " å…³é—­é¼ æ ‡
+set wrap " è®¾ç½®è‡ªåŠ¨æ¢è¡Œï¼Œ ä¸€è¡Œä¸å¤Ÿä¸¤è¡Œå±•ç¤º
 
-" ½ûÓÃÁåÉù
+" ç¦ç”¨é“ƒå£°
 set noerrorbells
 set novisualbell
 set t_vb=
-set so=5 " ÉèÖÃ¹â±êÔÚµÚ5ĞĞÉÏÏÂÏÔÊ¾
+set so=5 " è®¾ç½®å…‰æ ‡åœ¨ç¬¬5è¡Œä¸Šä¸‹æ˜¾ç¤º
 
-"3 Ëõ½ø
-set autoindent "°´ÏÂ»Ø³µ¼üºó£¬ÏÂÒ»ĞĞµÄËõ½ø»á×Ô¶¯¸úÉÏÒ»ĞĞµÄËõ½ø±£³ÖÒ»ÖÂ
-set smartindent "¿ªÆôĞÂĞĞÊ±Ê¹ÓÃÖÇÄÜ×Ô¶¯Ëõ½ø
-set expandtab	"ÓÉÓÚ Tab ¼üÔÚ²»Í¬µÄ±à¼­Æ÷Ëõ½ø²»Ò»ÖÂ£¬¸ÃÉèÖÃ×Ô¶¯½« Tab ×ªÎª¿Õ¸ñ
-set softtabstop=4 "Tab ×ªÎª¶àÉÙ¸ö¿Õ¸ñ
-set shiftwidth=4 "ÔÚÎÄ±¾ÉÏ°´ÏÂ>>£¨Ôö¼ÓÒ»¼¶Ëõ½ø£©¡¢<<£¨È¡ÏûÒ»¼¶Ëõ½ø£©»òÕß==£¨È¡ÏûÈ«²¿Ëõ½ø£©Ê±£¬Ã¿Ò»¼¶µÄ×Ö·ûÊı
+"3 ç¼©è¿›
+set autoindent "æŒ‰ä¸‹å›è½¦é”®åï¼Œä¸‹ä¸€è¡Œçš„ç¼©è¿›ä¼šè‡ªåŠ¨è·Ÿä¸Šä¸€è¡Œçš„ç¼©è¿›ä¿æŒä¸€è‡´
+set smartindent "å¼€å¯æ–°è¡Œæ—¶ä½¿ç”¨æ™ºèƒ½è‡ªåŠ¨ç¼©è¿›
+set expandtab	"ç”±äº Tab é”®åœ¨ä¸åŒçš„ç¼–è¾‘å™¨ç¼©è¿›ä¸ä¸€è‡´ï¼Œè¯¥è®¾ç½®è‡ªåŠ¨å°† Tab è½¬ä¸ºç©ºæ ¼
+set softtabstop=4 "Tab è½¬ä¸ºå¤šå°‘ä¸ªç©ºæ ¼
+set shiftwidth=4 "åœ¨æ–‡æœ¬ä¸ŠæŒ‰ä¸‹>>ï¼ˆå¢åŠ ä¸€çº§ç¼©è¿›ï¼‰ã€<<ï¼ˆå–æ¶ˆä¸€çº§ç¼©è¿›ï¼‰æˆ–è€…==ï¼ˆå–æ¶ˆå…¨éƒ¨ç¼©è¿›ï¼‰æ—¶ï¼Œæ¯ä¸€çº§çš„å­—ç¬¦æ•°
 
-"4 Íâ¹Ûµã
+"4 å¤–è§‚ç‚¹
 set tabstop=4
-"set cursorline "¹â±êËùÔÚµÄµ±Ç°ĞĞ¸ßÁÁ
-"set textwidth=120 "ÉèÖÃĞĞ¿í£¬¼´Ò»ĞĞÏÔÊ¾¶àÉÙ¸ö×Ö·û
-set colorcolumn=120 "ÉèÖÃÌáÊ¾Ïß120¸ö×Ö·û
+"set cursorline "å…‰æ ‡æ‰€åœ¨çš„å½“å‰è¡Œé«˜äº®
+"set textwidth=120 "è®¾ç½®è¡Œå®½ï¼Œå³ä¸€è¡Œæ˜¾ç¤ºå¤šå°‘ä¸ªå­—ç¬¦
+set colorcolumn=120 "è®¾ç½®æç¤ºçº¿120ä¸ªå­—ç¬¦
 "hi ColorColumn guifg=#8eb9f5 
-				"ÌáÊ¾ÏßÑÕÉ« ĞèÒª·ÅÔÚcolorscheme ºóÃæ
-set laststatus=2 "ÏÔÊ¾×´Ì¬À¸ (Ä¬ÈÏÖµÎª 1, ÎŞ·¨ÏÔÊ¾×´Ì¬À¸)
-set ruler    	"ÔÚ×´Ì¬À¸ÏÔÊ¾¹â±êµÄµ±Ç°Î»ÖÃ£¨Î»ÓÚÄÄÒ»ĞĞÄÄÒ»ÁĞ
-set guifont=Monaco:h14 "ÉèÖÃ×ÖÌåºÍ´óĞ¡
+				"æç¤ºçº¿é¢œè‰² éœ€è¦æ”¾åœ¨colorscheme åé¢
+set laststatus=2 "æ˜¾ç¤ºçŠ¶æ€æ  (é»˜è®¤å€¼ä¸º 1, æ— æ³•æ˜¾ç¤ºçŠ¶æ€æ )
+set ruler    	"åœ¨çŠ¶æ€æ æ˜¾ç¤ºå…‰æ ‡çš„å½“å‰ä½ç½®ï¼ˆä½äºå“ªä¸€è¡Œå“ªä¸€åˆ—
+set guifont=Monaco:h14 "è®¾ç½®å­—ä½“å’Œå¤§å°
 
-"5 ËÑË÷
-set showmatch "¹â±êÓöµ½Ô²À¨ºÅ¡¢·½À¨ºÅ¡¢´óÀ¨ºÅÊ±£¬×Ô¶¯¸ßÁÁ¶ÔÓ¦µÄÁíÒ»¸öÔ²À¨ºÅ¡¢·½À¨ºÅºÍ´óÀ¨ºÅ
-set hlsearch "¸ßÁÁÏÔÊ¾ £¨²éÕÒ×Ö·û´®ÊÇ£¬ÕÒµ½ºó¸ßÁÁÏÔÊ¾£©
-set noincsearch "ÔÚÊäÈëËÑË÷µÄ×Ö·û´®Í¬Ê±¾Í¿ªÊ¼ËÑË÷ÒÑ¾­ÊäÈëµÄ²¿·Ö
-set smartcase "Ğ¡Ğ´ËÑË÷ ºöÂÔ´óĞ¡Ğ´£¬ÓĞ´óĞ´Ôò¾«È·Æ¥Åä
-" set incsearch "ÔÚÊäÈëËÑË÷µÄ×Ö·û´®Í¬Ê±¾Í¿ªÊ¼ËÑË÷ÒÑ¾­ÊäÈëµÄ²¿·Ö
-"set ignorecase "ËÑË÷Ê±ºöÂÔ´óĞ¡Ğ´
+"5 æœç´¢
+set showmatch "å…‰æ ‡é‡åˆ°åœ†æ‹¬å·ã€æ–¹æ‹¬å·ã€å¤§æ‹¬å·æ—¶ï¼Œè‡ªåŠ¨é«˜äº®å¯¹åº”çš„å¦ä¸€ä¸ªåœ†æ‹¬å·ã€æ–¹æ‹¬å·å’Œå¤§æ‹¬å·
+set hlsearch "é«˜äº®æ˜¾ç¤º ï¼ˆæŸ¥æ‰¾å­—ç¬¦ä¸²æ˜¯ï¼Œæ‰¾åˆ°åé«˜äº®æ˜¾ç¤ºï¼‰
+set noincsearch "åœ¨è¾“å…¥æœç´¢çš„å­—ç¬¦ä¸²åŒæ—¶å°±å¼€å§‹æœç´¢å·²ç»è¾“å…¥çš„éƒ¨åˆ†
+set smartcase "å°å†™æœç´¢ å¿½ç•¥å¤§å°å†™ï¼Œæœ‰å¤§å†™åˆ™ç²¾ç¡®åŒ¹é…
+" set incsearch "åœ¨è¾“å…¥æœç´¢çš„å­—ç¬¦ä¸²åŒæ—¶å°±å¼€å§‹æœç´¢å·²ç»è¾“å…¥çš„éƒ¨åˆ†
+"set ignorecase "æœç´¢æ—¶å¿½ç•¥å¤§å°å†™
 
-"6 ±à¼­
-" set spell spelllang=en_us "´ò¿ªÓ¢Óïµ¥´ÊµÄÆ´Ğ´¼ì²é
-set history=1000 "ĞèÒª¼Ç×¡¶àÉÙ´ÎÀúÊ·²Ù×÷
-set autoread "´ò¿ªÎÄ¼ş¼àÊÓ¡£Èç¹ûÔÚ±à¼­¹ı³ÌÖĞÎÄ¼ş·¢ÉúÍâ²¿¸Ä±ä£¨±ÈÈç±»±ğµÄ±à¼­Æ÷±à¼­ÁË£©£¬¾Í»á·¢³öÌáÊ¾
-set listchars=tab:0†3¡ö,trail:¡ö " Èç¹ûĞĞÎ²ÓĞ¶àÓàµÄ¿Õ¸ñ£¨°üÀ¨ Tab ¼ü£©£¬¸ÃÅäÖÃ½«ÈÃÕâĞ©¿Õ¸ñÏÔÊ¾³É¿É¼ûµÄĞ¡·½¿é
-set list
-set wildmenu				   "ÃüÁîÄ£Ê½ÏÂ£¬µ×²¿²Ù×÷Ö¸Áî°´ÏÂ Tab ¼ü×Ô¶¯²¹È«¡£µÚÒ»´Î°´ÏÂ Tab£¬»áÏÔÊ¾ËùÓĞÆ¥ÅäµÄ²Ù×÷Ö¸ÁîµÄÇåµ¥
-set wildmode=longest:list,full "µÚ¶ş´Î°´ÏÂ Tab£¬»áÒÀ´ÎÑ¡Ôñ¸÷¸öÖ¸Áî¡£
-" vimÍË¸ñ¼ü£¨backspace£©ÎŞ·¨Ê¹ÓÃµÄ½â¾ö·½·¨ https://www.jianshu.com/p/159b01325e61
+"6 ç¼–è¾‘
+" set spell spelllang=en_us "æ‰“å¼€è‹±è¯­å•è¯çš„æ‹¼å†™æ£€æŸ¥
+set history=1000 "éœ€è¦è®°ä½å¤šå°‘æ¬¡å†å²æ“ä½œ
+set autoread "æ‰“å¼€æ–‡ä»¶ç›‘è§†ã€‚å¦‚æœåœ¨ç¼–è¾‘è¿‡ç¨‹ä¸­æ–‡ä»¶å‘ç”Ÿå¤–éƒ¨æ”¹å˜ï¼ˆæ¯”å¦‚è¢«åˆ«çš„ç¼–è¾‘å™¨ç¼–è¾‘äº†ï¼‰ï¼Œå°±ä¼šå‘å‡ºæç¤º
+set listchars=tab:Â»â– ,trail:â–  " å¦‚æœè¡Œå°¾æœ‰å¤šä½™çš„ç©ºæ ¼ï¼ˆåŒ…æ‹¬ Tab é”®ï¼‰ï¼Œè¯¥é…ç½®å°†è®©è¿™äº›ç©ºæ ¼æ˜¾ç¤ºæˆå¯è§çš„å°æ–¹å—
+set list 		"æ¥æ˜¾ç¤ºéå¯è§å­—ç¬¦
+set wildmenu		"å‘½ä»¤æ¨¡å¼ä¸‹ï¼Œåº•éƒ¨æ“ä½œæŒ‡ä»¤æŒ‰ä¸‹ Tab é”®è‡ªåŠ¨è¡¥å…¨ã€‚ç¬¬ä¸€æ¬¡æŒ‰ä¸‹ Tabï¼Œä¼šæ˜¾ç¤ºæ‰€æœ‰åŒ¹é…çš„æ“ä½œæŒ‡ä»¤çš„æ¸…å•
+set wildmode=longest:list,full "ç¬¬äºŒæ¬¡æŒ‰ä¸‹ Tabï¼Œä¼šä¾æ¬¡é€‰æ‹©å„ä¸ªæŒ‡ä»¤ã€‚
+" vimé€€æ ¼é”®ï¼ˆbackspaceï¼‰æ— æ³•ä½¿ç”¨çš„è§£å†³æ–¹æ³• https://www.jianshu.com/p/159b01325e61
 " https://blog.csdn.net/u011475134/article/details/76216145
-" indent: Èç¹ûÓÃÁË:set indent,:set ai µÈ×Ô¶¯Ëõ½ø£¬ÏëÓÃÍË¸ñ¼ü½«×Ö¶ÎËõ½øµÄÉ¾µô£¬±ØĞëÉèÖÃÕâ¸öÑ¡Ïî¡£·ñÔò²»ÏìÓ¦¡£
-" eol:Èç¹û²åÈëÄ£Ê½ÏÂÔÚĞĞ¿ªÍ·£¬ÏëÍ¨¹ıÍË¸ñ¼üºÏ²¢Á½ĞĞ£¬ĞèÒªÉèÖÃeol¡£
-" start£ºÒªÏëÉ¾³ı´Ë´Î²åÈëÇ°µÄÊäÈë£¬ĞèÉèÖÃÕâ¸ö¡£
-set nocompatible " ²»ÒªÊ¹ÓÃviµÄ¼üÅÌÄ£Ê½£¬¶øÊÇvim×Ô¼ºµÄ
+" indent: å¦‚æœç”¨äº†:set indent,:set ai ç­‰è‡ªåŠ¨ç¼©è¿›ï¼Œæƒ³ç”¨é€€æ ¼é”®å°†å­—æ®µç¼©è¿›çš„åˆ æ‰ï¼Œå¿…é¡»è®¾ç½®è¿™ä¸ªé€‰é¡¹ã€‚å¦åˆ™ä¸å“åº”ã€‚
+" eol:å¦‚æœæ’å…¥æ¨¡å¼ä¸‹åœ¨è¡Œå¼€å¤´ï¼Œæƒ³é€šè¿‡é€€æ ¼é”®åˆå¹¶ä¸¤è¡Œï¼Œéœ€è¦è®¾ç½®eolã€‚
+" startï¼šè¦æƒ³åˆ é™¤æ­¤æ¬¡æ’å…¥å‰çš„è¾“å…¥ï¼Œéœ€è®¾ç½®è¿™ä¸ªã€‚
+set nocompatible " ä¸è¦ä½¿ç”¨viçš„é”®ç›˜æ¨¡å¼ï¼Œè€Œæ˜¯vimè‡ªå·±çš„
 set backspace=indent,eol,start "
 
 filetype indent on
 filetype on
 
 
-" 6 ²å¼ş
+" 6 æ’ä»¶
 execute pathogen#infect()
 syntax on
 filetype plugin on
 filetype plugin indent on
 
 " Bundle 'majutsushi/tagbar'
-" tagbar Ê¹ÓÃtagbar²å¼ş
+" tagbar ä½¿ç”¨tagbaræ’ä»¶
 " https://www.oschina.net/news/78490/vim-editor-plugins-for-software-developers-1
 " https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim
 "
-" ²å¼ş snazzy Ö÷Ìâ
+" æ’ä»¶ snazzy ä¸»é¢˜
 " https://github.com/connorholyday/vim-snazzy
 colorscheme snazzy
 "let g:SnazzyTransparent = 1
@@ -115,7 +115,7 @@ let g:tagbar_width = 30
 map <F3> :NERDTreeToggle<CR>
 let NERDTreeWinSize=40
 
-" phpÓï·¨¼ì²é
+" phpè¯­æ³•æ£€æŸ¥
 " :
 let g:PHP_SYNTAX_CHECK_BIN = '/d/phpStudy/php/php-7.0.12-nts/php'
 "  au FileType php call PHPFuncList()
@@ -125,30 +125,30 @@ autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 imap <F6> <C-x><C-o>
 
 
-" supertab ×Ô¶¯²¹È«
+" supertab è‡ªåŠ¨è¡¥å…¨
 "let g:SuperTabMappingForward=""
 let g:SuperTabMappingForward = "<tab>"
 let g:SuperTabMappingBackward= "s-tab"
 let g:SuperTabRetainCompletionType=2
 
-" go µÄ×Ô¶¯Óï·¨¼ì²é
+" go çš„è‡ªåŠ¨è¯­æ³•æ£€æŸ¥
 " None of these worked:
 " autocmd BufWritePre,FileType go Fmt
 " autocmd BufWritePre,FileType go :Fmt
 
-" php¹Ø±Õ×Ô¶¯ÕÛµş
+" phpå…³é—­è‡ªåŠ¨æŠ˜å 
 " PIV
 let g:DisableAutoPHPFolding = 1
 
-" ×Ô¶¯×¢ÊÍ
+" è‡ªåŠ¨æ³¨é‡Š
 let mapleader=","
 
 
-" ×Ô¶¨Òå¿ì½İ¼ü
+" è‡ªå®šä¹‰å¿«æ·é”®
 map <tab> <C-x><C-o>
 ```
 
-# 2.²å¼ş
+# 2.æ’ä»¶
 
 ```
 delimitMate/
@@ -170,7 +170,7 @@ vim-markdown/
 vim-snazzy-master/
 vim-snipmate-master/
 ```
-## 2.1 ²å¼şµØÖ·
+## 2.1 æ’ä»¶åœ°å€
 
 
 https://github.com/boydos/emmet-vim.git
