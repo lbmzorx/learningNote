@@ -1,3 +1,5 @@
+```
+
 zz   光标移动到屏幕中间  有用
 :set rnu  设置 相对行号，不太用  set nornu
 
@@ -20,3 +22,10 @@ let &t_EI= "\<Esc>]50;CursorShap=0\x7"
 set autochdir "  'autochdir' 'acd' 'noautochdir' 'noacd'
 "  When on, Vim will change the current working directory whenever you
 " open a file, switch buffers, delete a buffer or open/close a window.
+
+" 占位符,方便编辑
+imap <C-m> <++>
+map <LEADER><LEADER> <Esc>/<++><CR>:nohlsearch<CR>xxxxi
+
+
+```
