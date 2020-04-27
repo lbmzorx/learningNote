@@ -110,10 +110,24 @@ let g:tagbar_right=1
 let g:tagbar_ctags_bin='/d/ProgramFiles/ctags/ctags'
 let g:tagbar_width = 30
 
-" NERDTree
-" https://segmentfault.com/a/1190000015143474
-map <F3> :NERDTreeToggle<CR>
-let NERDTreeWinSize=40
+" tarlist 
+" https://github.com/vim-scripts/taglist.vim
+let g:tagbar_width = 30
+let g:tagbar_ctags_bin='/usr/bin/ctags' 
+nmap <F8> :TagbarToggle<CR> 
+nmap <leader>s :TagbarToggle<CR>
+
+" " nerdtree  
+" https://github.com/preservim/nerdtree 
+" https://segmentfault.com/a/1190000015143474 
+"
+map <F9> :NERDTreeMirror<CR>  
+map <leader>f :NERDTreeMirror<CR>
+map <F9> :NERDTreeToggle<CR>
+map <leader>d :NERDTreeToggle<CR>
+let g:tagbar_ctags_bin='/usr/bin/ctags'     "ctags 程序的路径 
+let g:tagbar_width=30              "窗口宽度设置为 30 
+let g:tagbar_left=0                "设置在 vim 左边显示
 
 " php语法检查
 " :
