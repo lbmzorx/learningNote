@@ -4,7 +4,7 @@
 use information_schema;
 
 select TABLE_SCHEMA, concat(truncate(sum(data_length)/1024/1024/1024, 3),' GB') as data_size, 
-                    concat(truncate(sum(index_length)/1024/1024/1024,3),'MB') as index_size 
+                    concat(truncate(sum(index_length)/1024/1024/1024,3),'GB') as index_size 
                     from information_schema.tables 
                     group by TABLE_SCHEMA 
                     order by data_length desc; 
