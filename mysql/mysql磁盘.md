@@ -29,7 +29,9 @@ show table status like "%表名%"
 ```
 
 数据总大小 = Data_length + Index_length
+
 实际表空间文件大小 = rows * Avg_row_length
+
 碎片大小 = (数据总大小 - 实际表空间文件大小) / 1024 /1024 = 0.63MB
 
 3.2 通过information_schema.tables的DATA_FREE列查看表有没有碎片：
